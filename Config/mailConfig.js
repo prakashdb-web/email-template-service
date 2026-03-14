@@ -1,4 +1,4 @@
 module.exports = {
-  mailUser: "pushan2003@gmail.com",
-  mailPass: "cgboidtrxynazxyk"
+  mailUser: "your-email@gmail.com",
+  mailPass: "your-app-password"
 };
