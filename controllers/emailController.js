@@ -1,43 +1,23 @@
-const templateService =
-require("../services/templateService");
+const emailUtil = require("../utils/emailUtil");
 
-const transporter =
-require("../Config/mailer");
+exports.sendEmail = async (req, res) => {
 
-const parseTemplate =
-require("../utils/templateParser");
+  const { to, subject, template, values } = req.body;
 
-exports.sendEmail = async (req, res, next) => {
+  try {
 
- try {
+    await emailUtil.sendEmail(to, subject, template, values);
 
-  const { templateName, to, data } = req.body;
+    res.json({
+      message: "Email sent successfully"
+    });
 
-  const template =
-  await templateService.getTemplate(templateName);
+  } catch (error) {
 
-  const subject =
-  parseTemplate(template.subject, data);
+    res.status(500).json({
+      error: error.message
+    });
 
-  const body =
-  parseTemplate(template.body, data);
-
-  await transporter.sendMail({
-   from: process.env.MAIL_USER,
-   to: to,
-   subject: subject,
-   text: body
-  });
-
-  res.json({
-   success: true,
-   message: "Email sent successfully"
-  });
-
- } catch (err) {
-
-  next(err);
-
- }
+  }
 
 };

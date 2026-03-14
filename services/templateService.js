@@ -1,20 +1,12 @@
-const db = require("../\Config/db");
+exports.prepareTemplate = (template, values) => {
 
-async function getTemplate(name) {
+  let result = template;
 
-  const query =
-  "SELECT subject, body FROM templates WHERE name=?";
-
-  const [rows] =
-  await db.execute(query,[name]);
-
-  if(rows.length === 0){
-    throw new Error("Template not found");
+  for (let key in values) {
+    const placeholder = `{{${key}}}`;
+    result = result.replace(new RegExp(placeholder, "g"), values[key]);
   }
 
-  return rows[0];
-}
+  return result;
 
-module.exports = {
-  getTemplate
 };
