@@ -1,22 +1,26 @@
 const nodemailer = require("nodemailer");
-const mailConfig = require("../Config/mailConfig");
 const templateService = require("../services/templateService");
-
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  secure: true,
-  auth: {
-    user: mailConfig.mailUser,
-    pass: mailConfig.mailPass
-  }
-});
+const emailConfigService = require("../services/emailConfigService");
 
 exports.sendEmail = async (to, subject, template, values) => {
 
+  // get credentials from DB
+  const creds = await emailConfigService.getEmailCredentials();
+
+  const transporter = nodemailer.createTransport({
+    service: creds.service,
+    secure: true,
+    auth: {
+      user: creds.mail_user,
+      pass: creds.mail_pass
+    }
+  });
+
+  // parse template
   const parsedTemplate = templateService.prepareTemplate(template, values);
 
   const mailOptions = {
-    from: mailConfig.mailUser,
+    from: creds.mail_user,
     to: to,
     subject: subject,
     text: parsedTemplate
