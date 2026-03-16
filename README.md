@@ -1,8 +1,8 @@
 # Dynamic Email Template Service (Node.js)
 
-A backend microservice built using Node.js and Express.js that sends dynamic emails using stored templates from a MySQL database.
+A backend microservice built using Node.js and Express.js that sends dynamic emails using templates stored in a MySQL database.
 
-The service replaces template variables like `{{customerName}}` with real values before sending emails.
+The service replaces template placeholders like `{{name}}` or `{{company}}` with real values before sending the email using Nodemailer.
 
 ---
 
@@ -17,23 +17,22 @@ The service replaces template variables like `{{customerName}}` with real values
 
 # Features
 
-* Dynamic email templates
-* MySQL database integration
-* Gmail email sending
-* Template variable replacement
-* Modular and scalable project structure
-* Basic error handling
+✔ Dynamic email templates stored in database
+✔ Email credentials managed through database configuration
+✔ Template variable replacement
+✔ Modular project structure
+✔ Error handling for API responses
+✔ Simple REST API for sending emails
 
 ---
 
 # Project Structure
 
-```text
+```
 project
 │
 ├── config
-│   ├── db.js
-│   └── mailConfig.js
+│   └── db.js
 │
 ├── controllers
 │   └── emailController.js
@@ -42,7 +41,8 @@ project
 │   └── emailRoutes.js
 │
 ├── services
-│   └── templateService.js
+│   ├── templateService.js
+│   └── emailConfigService.js
 │
 ├── utils
 │   └── emailUtil.js
@@ -59,7 +59,13 @@ project
 Clone the repository
 
 ```
-git clone https://github.com/YOUR_USERNAME/email-template-service.git
+git clone https://github.com/your-repository/email-template-service.git
+```
+
+Move into the project directory
+
+```
+cd email-template-service
 ```
 
 Install dependencies
@@ -70,40 +76,27 @@ npm install
 
 ---
 
-# Email Configuration
-
-Email credentials are stored in the **mail configuration file**.
-
-File:
-
-```
-config/mailConfig.js
-```
-
-Example configuration:
-
-```javascript
-module.exports = {
-  mailUser: "your-email@gmail.com",
-  mailPass: "your-app-password"
-};
-```
-
-⚠️ If using Gmail, generate an **App Password** from your Google account instead of using your normal password.
-
----
-
 # Database Setup
 
 Create database
 
-```
+```sql
 CREATE DATABASE email_service;
 ```
 
-Create template table
+Use database
 
+```sql
+USE email_service;
 ```
+
+---
+
+# Templates Table
+
+Create table for storing email templates.
+
+```sql
 CREATE TABLE templates (
  id INT AUTO_INCREMENT PRIMARY KEY,
  name VARCHAR(100),
@@ -112,22 +105,50 @@ CREATE TABLE templates (
 );
 ```
 
-Insert example template
+Example template:
 
-```
+```sql
 INSERT INTO templates (name, subject, body)
 VALUES (
-'welcome_email',
-'Welcome {{customerName}}',
-'Hello {{customerName}}, we are glad to have you with us. Best regards, {{companyName}}'
+'welcome',
+'Welcome {{name}}',
+'Hello {{name}}, welcome to our platform.'
 );
 ```
 
 ---
 
+# Email Configuration Table
+
+Create table for storing email credentials.
+
+```sql
+CREATE TABLE email_config (
+ id INT AUTO_INCREMENT PRIMARY KEY,
+ mail_user VARCHAR(255) NOT NULL,
+ mail_pass VARCHAR(255) NOT NULL,
+ service VARCHAR(100) DEFAULT 'gmail'
+);
+```
+
+Insert email configuration.
+
+```sql
+INSERT INTO email_config (mail_user, mail_pass, service)
+VALUES (
+'your-email@gmail.com',
+'your-app-password',
+'gmail'
+);
+```
+
+Note: When using Gmail, an **App Password** must be generated instead of the normal account password.
+
+---
+
 # Running the Server
 
-Start the application:
+Start the server
 
 ```
 node server.js
@@ -143,49 +164,56 @@ http://localhost:1000
 
 # API Endpoint
 
-### Send Email
-
-POST
+Send Email
 
 ```
-http://localhost:1000/email/send-email
+POST /email/send-email
 ```
 
----
-
-# Request Body Example
+Example request body:
 
 ```
 {
- "templateName": "welcome_email",
  "to": "recipient@example.com",
- "data": {
-   "customerName": "Alex",
-   "companyName": "Example Company"
+ "subject": "Welcome",
+ "template": "Hello {{name}}, welcome to {{company}}",
+ "values": {
+   "name": "User",
+   "company": "Example Organization"
  }
 }
 ```
 
 ---
 
-# Example Email Output
+# Example Output
 
-### Subject
-
-```
-Welcome Alex
-```
-
-### Body
+Subject:
 
 ```
-Hello Alex, we are glad to have you with us. Best regards, Example Company
+Welcome User
+```
+
+Body:
+
+```
+Hello User, welcome to Example Organization
 ```
 
 ---
 
-# Author
+# How It Works
 
-Backend microservice demonstrating a scalable email templating system using Node.js and MySQL.
-
-
+```
+Client Request
+      ↓
+Express Route
+      ↓
+Controller
+      ↓
+Email Utility
+      ↓
+Database (Email Config + Templates)
+      ↓
+Nodemailer sends email
+```
